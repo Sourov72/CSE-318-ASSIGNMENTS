@@ -300,19 +300,19 @@ class playGame:
         
         if(type == 0):
             print("using Hamming Distance Heuristic:   ")
-            print("No of expanded nodes: " + str(len(self.close)))
+            print("No of expanded nodes: " + str(len(self.close) - 1))
             print("No of explored nodes: " + str((self.open.qsize() + len(self.close))))
             print("optimal cost to reach the goal state" + ": " + str(self.solvedNode.gDist))
             self.print_path(self.solvedNode)
         elif(type == 1):
             print("using Manhattan Distance Heuristic:   ")
-            print("No of expanded nodes: " + str(len(self.close)))
+            print("No of expanded nodes: " + str(len(self.close) - 1))
             print("No of explored nodes: " + str((self.open.qsize() + len(self.close))))
             print("optimal cost to reach the goal state" + ": " + str(self.solvedNode.gDist))
             self.print_path(self.solvedNode)
         elif(type == 2):
             print("using Linear Conflict Heuristic:   ")
-            print("No of expanded nodes: " + str(len(self.close)))
+            print("No of expanded nodes: " + str(len(self.close) - 1))
             print("No of explored nodes: " + str((self.open.qsize() + len(self.close))))
             print("optimal cost to reach the goal state" + ": " + str(self.solvedNode.gDist))
             self.print_path(self.solvedNode)

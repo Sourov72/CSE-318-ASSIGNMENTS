@@ -1,0 +1,10 @@
+
+*.class
+
+*.xml
+
+out\.txt
+
+*.kotlin_module
+
+*.log
