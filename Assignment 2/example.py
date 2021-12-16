@@ -1,34 +1,12 @@
 
 
 
-import copy
 
 
-class hell:
+lis = [[2, 3], [5, 1], [1, 4], [1, 3], [2, 1]]
 
-    def __init__(self):
-       self.free = [1, 2]
-       
-    def change(self):
-        self.free[0] = 5
-    
-
-m = hell()
-
-
-
-h = copy.deepcopy(m) 
-print(m.free)
-print(h.free)
-
-m.change()
-
-print(m.free)
-print(h.free)
-
-
-
-
+lis.sort()
+print(lis)
   
 
     

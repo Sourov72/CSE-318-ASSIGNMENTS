@@ -1,23 +1,31 @@
 
+
+
 import copy
 
 from math import inf
 
 from mancalaBoard import *
 
+
 from Heuristic import *
 class manacalaPlay:
     
-    def __init__(self, currentplayer,depth):
+    def __init__(self, currentplayer, gametype, depth1, depth2, type1 , type2, move):
         self.noofBins = 6
         self.noofStones = 4
         self.board=[]
         self.noofPlayers = 2
         self.currentplayer = currentplayer
-        self.depth = depth
+        self.depth1 = depth1
+        self.depth2 = depth2
+        self.type1 = type1
+        self.type2 = type2
+        self.gameType = gametype
         self._initiate()
         self.heuristic = Heurisitic()
         self.mainBoard = mancalaBoard(self.currentplayer, self.board)
+        # self.f = open("write.txt", "w")
         
         
     def _initiate(self):
@@ -28,61 +36,122 @@ class manacalaPlay:
                 temp.append(int(self.noofStones))
             temp.append(0)
             self.board.append(temp)
+            
+            
+            
+    def _moveOrdering(self, mboard):
+        
+        childList = []
+        
+        for i in range(mboard.storage):
+            
+            temp=[]
+            
+            
+            if(self.mboard._getboard()[self.mboard._getcurrentPlayer()][i] == 0):
+                continue
+            m = copy.deepcopy(self.mboard)
+            
+            m._move(i)
+            if(self.mainBoard._getcurrentPlayer() == 1):
+                res = self.heuristic._heuristic(m, self.mainBoard._getcurrentPlayer(), self.type1)
+                # self.f.write(str(ret) + "\n")
+
+            else:
+                res = self.heuristic._heuristic(m, self.mainBoard._getcurrentPlayer(), self.type2)
+                
+            temp.append(res)
+            temp.append(i)
+            temp.append(m)
+            childList.append(temp)
+            
+        return childList
+                
+                
+            
+            
+            
+               
                    
     
     def _play(self):
         
         i = 0
+        depth1here = -inf
+        depth2here = -inf
         while(True):
             
-            if(self.mainBoard._getcurrentPlayer() == 0):
+            
+            # print("current player", self.mainBoard._getcurrentPlayer())
+        
+            # print("opposite player", 1 - self.mainBoard._getcurrentPlayer())
+            
+            # print("current capture ", self.mainBoard._getcapturemove(self.mainBoard._getcurrentPlayer()))
+            
+            # print("opponent capture ",  self.mainBoard._getcapturemove(1 - self.mainBoard._getcurrentPlayer()))
+            
+            depth1here = -inf
+            depth2here = -inf
+            if(self.mainBoard._getcurrentPlayer() == 0 or self.gameType == 2):
                 bestPos = -1
                 alpha = -inf
                 beta = inf
                 maxEval = -inf
                 
-                if(self.mainBoard._gameover()):
+                
+                if(self.mainBoard._getcurrentPlayer() == 1):
+                    htype = self.type1
+                    depth = self.depth1
+                else:
+                    htype = self.type2
+                    depth = self.depth2
+                
+                
+                if(self.mainBoard._gameover(self.mainBoard._getoppositePlayer()) or self.mainBoard._gameover(self.mainBoard._getcurrentPlayer())):
                     self._printBoard(self.mainBoard._getboard())
-                    self.mainBoard._gamewin()
+                    return self.mainBoard._gamewin()
+                  
+                  
+                if(depth == 0):
+                    print("Game Tied")
                     break
+                    
+                    
                 
                 for i in range(6):
                     if(self.mainBoard._getboard()[self.mainBoard._getcurrentPlayer()][i] == 0):
                         continue
                     m = copy.deepcopy(self.mainBoard)
-                    # print("free move, ", m._getfreemove(self.mainBoard._getcurrentPlayer()) + m._getfreemove(1 - self.mainBoard._getcurrentPlayer()))
-                    # self._minimax(m, self.depth, -inf, inf, True, self.mainBoard._getcurrentPlayer(), -1)
 
-                    print("in the primary max")
                     
                     if(not m._move(i)):
-                        # print("In max player")
-                        # print("player no: ", m._getcurrentPlayer(), self.mainBoard._getcurrentPlayer())
-                        # print("self free move, ", m.freemove)
-                        # input()
-                        eval = self._minimax(m, self.depth - 1, alpha, beta, False, self.mainBoard._getoppositePlayer())
+
+                        eval = self._minimax(m, depth - 1, alpha, beta, False, self.mainBoard._getoppositePlayer())
+                        
+                        
                     else:
-                        # print("In max player")
-                        # print("player no: ", m._getcurrentPlayer(), self.mainBoard._getcurrentPlayer())
-                        print("self free move, ", m.freemove)
-                        # input()
-                        eval = self._minimax(m, self.depth - 1, alpha, beta, True, self.mainBoard._getcurrentPlayer()) 
-                       
-                     
+
+                        eval = self._minimax(m, depth - 1, alpha, beta, True, self.mainBoard._getcurrentPlayer()) 
+                        
+                        
                     
-                    # print("values ", i, "eval :", eval, "maxval: ", maxEval)
                     if(eval > maxEval):
-                       
+                        
                         bestPos = i
                         maxEval = eval
                         
-                    alpha = max(alpha, maxEval)
-                    # if (beta <= alpha):
-                    #     break                    
+                        depth1here = capture1
+                        depth2here = capture2
+                        
+                    alpha = max(alpha, eval)
+                    
+                    
+                    if (beta <= alpha):
+                        break                    
                     
 
             else:
-                if(not self.mainBoard._gameover()):
+                if(not (self.mainBoard._gameover(self.mainBoard._getoppositePlayer()) or self.mainBoard._gameover(self.mainBoard._getcurrentPlayer()))):
                     bestPos = input("which bin you want to select?: ") 
                     bestPos = ord(bestPos) - 97
                 else: 
@@ -90,34 +159,55 @@ class manacalaPlay:
             
             
             if(bestPos == -1):
-                print("in pos equals minus one: ")
                 self._printBoard(self.mainBoard._getboard())
-                self.mainBoard._gamewin()
-                break
-            i += 1
-            # if(i == 40):
-            #     break  
-            if(self.mainBoard._getcurrentPlayer() == 0):
-                print("player 2's move: ")
-            else:
-                print("player 1's move: ")
+                return self.mainBoard._gamewin()
                 
-            print("chosen position for next move: ")
+            if(self.mainBoard._getcurrentPlayer() == 0):
+                
+                print("player 2's move: chosen position for next move: ")
+            else:
+                
+                print("player 1's move: chosen position for next move: ")
+                
+                
+            print("captured value for ", self.mainBoard._getcurrentPlayer(), depth1here)    
+            print("captured value for ", 1 - self.mainBoard._getcurrentPlayer(), depth2here)
+                
             print(chr(bestPos + 97))
-            if(not self.mainBoard._move(bestPos)):
+            if(not self.mainBoard._move(bestPos)): 
                 self.mainBoard._setcurrentPlayer(self.mainBoard._getoppositePlayer())
+                
+            self.mainBoard._reset()
             self._printBoard(self.mainBoard._getboard())
+            
+            
+            
+            
     
     def _minimax(self, testmancalaBoard, depth, alpha, beta, maximizingPlayer, playerTurn):
         
         # here testmancalaBoard is a manacalaBoard object
         
+
         
-        if(testmancalaBoard._gameover() or depth == 0):
-            if(playerTurn == 1):
-                return self.heuristic._heuristic1(testmancalaBoard, self.mainBoard._getcurrentPlayer())
+        
+        if(testmancalaBoard._gameover(self.mainBoard._getcurrentPlayer()) or testmancalaBoard._gameover(self.mainBoard._getoppositePlayer()) or depth == 0):
+            
+            global capture1, capture2
+            
+            capture1 = testmancalaBoard._getcapturemove(self.mainBoard._getcurrentPlayer())
+            
+            capture2 = testmancalaBoard._getcapturemove(1 - self.mainBoard._getcurrentPlayer())
+            
+            
+            
+            if(self.mainBoard._getcurrentPlayer() == 1):
+                return self.heuristic._heuristic(testmancalaBoard, self.mainBoard._getcurrentPlayer(), self.type1)
+                # self.f.write(str(ret) + "\n")
+
             else:
-                return self.heuristic._heuristic3(testmancalaBoard, self.mainBoard._getcurrentPlayer())
+                return self.heuristic._heuristic(testmancalaBoard, self.mainBoard._getcurrentPlayer(), self.type2)
+                # self.f.write(str(ret) + "\n")
         
         if(maximizingPlayer):
             maxEval = -inf
@@ -131,25 +221,21 @@ class manacalaPlay:
                 
                 
                 if(not m._move(i)):
-                    # print("In max player")
-                    # print("player no: ", m._getcurrentPlayer(), self.mainBoard._getcurrentPlayer())
-                    # print("self free move, ", m.freemove)
-                    # input()
+
                     eval = self._minimax(m, depth - 1, alpha, beta, False, 1 - playerTurn)
                 else:
-                    # print("In max player")
-                    # print("player no: ", m._getcurrentPlayer(), self.mainBoard._getcurrentPlayer())
-                    # print("self free move, ", m.freemove)
-                    # input()
+
                     eval = self._minimax(m, depth - 1, alpha, beta, True, playerTurn)
                     
                 
                     
                 maxEval = max(eval, maxEval)
                 
-                alpha = max(alpha, maxEval)
-                # if (beta <= alpha):
-                #     break
+                alpha = max(alpha, eval)
+                
+                
+                if (beta <= alpha):
+                    break
                 
             return maxEval
                 
@@ -167,24 +253,19 @@ class manacalaPlay:
 
             
                 if(not m._move(i)):
-                    # print("In min player")
-                    # print("player no: ", m._getcurrentPlayer(), self.mainBoard._getcurrentPlayer())
-                    # print("self free move, ", m.freemove)
-                    # input()
+
                     eval = self._minimax(m, depth - 1, alpha, beta, True, 1 - playerTurn)
+                    
                 else:
-                    # print("In min player")
-                    # print("player no: ", m._getcurrentPlayer(), self.mainBoard._getcurrentPlayer())
-                    # print("self free move, ", m.freemove)
-                    # input()
+
                     eval = self._minimax(m, depth - 1, alpha, beta, False, playerTurn)
                     
                 
                 minEval = min(minEval, eval)
 
-                beta = min(beta, minEval)
-                # if (beta <= alpha):
-                #     break
+                beta = min(beta, eval)
+                if (beta <= alpha):
+                    break
                 
                 
             return minEval                 
@@ -226,15 +307,5 @@ class manacalaPlay:
         print("+-----+  a     b     c     d     e     f  +-----+")     
         print()  
         
-        
-        
-        # for i in range(self.noofPlayers):
-            
-        #     for j in range(self.noofBins + 1):
-                
-        #         if(int(board[i][j]) < 10):
-
-        #             board[i][j] = int(board[i][j]) 
-            
     
             
